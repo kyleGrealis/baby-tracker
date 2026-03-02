@@ -1,0 +1,10 @@
+# This file allows packrat (used by rsconnect during deployment) to pick up dependencies.
+library(DBI)
+library(dbplyr)
+library(htmlwidgets)
+library(reactable)
+library(rhino)
+library(RSQLite)
+library(styler)
+library(treesitter)
+library(treesitter.r)

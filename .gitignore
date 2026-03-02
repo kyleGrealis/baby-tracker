@@ -1,0 +1,20 @@
+data/
+*.rda
+*.parquet
+
+# R stuff
+.Rproj.user
+.Rhistory
+.RData
+.Ruserdata
+*.Rproj
+/doc/
+/Meta/
+docs/
+
+# Database (local data)
+*.sqlite
+
+# AI
+.claude
+CLAUDE.md

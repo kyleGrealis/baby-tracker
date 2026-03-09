@@ -2,6 +2,9 @@ data/
 *.rda
 *.parquet
 
+# Secrets
+.Renviron
+
 # R stuff
 .Rproj.user
 .Rhistory
@@ -11,9 +14,6 @@ data/
 /doc/
 /Meta/
 docs/
-
-# Database (local data)
-*.sqlite
 
 # AI
 .claude

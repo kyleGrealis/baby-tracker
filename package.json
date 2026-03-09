@@ -1,13 +1,7 @@
 {
-  "name": "baby-tracker",
+  "name": "baby-care-tracker",
   "version": "1.0.0",
   "type": "module",
   "private": true,
-  "description": "Baby care event tracker (Rhino/Shiny)",
-  "scripts": {
-    "shiny": "R -e 'rhino::app()'"
-  },
-  "devDependencies": {
-    "wrangler": "^4.65.0"
-  }
+  "description": "A Rhino/Shiny app for tracking baby care events"
 }

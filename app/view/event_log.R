@@ -43,7 +43,7 @@ ui <- function(id) {
           )
         ),
         actionButton(
-          ns("search_open"), "?",
+          ns("search_open"), "🔍",
           class = "btn-search"
         )
       ),

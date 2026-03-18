@@ -2,7 +2,7 @@
 
 box::use(
   dplyr[arrange, filter, group_by, lead, mutate, n, summarize, ],
-  stats[setNames],
+  stats[setNames, ],
 )
 
 # --- Event type mapping ---

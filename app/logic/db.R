@@ -17,10 +17,10 @@
 #    you fork the repo and want to keep your own data.
 
 box::use(
-  DBI[dbConnect, dbDisconnect, dbExecute, dbGetQuery],
-  dbplyr[...],
+  DBI[dbConnect, dbDisconnect, dbExecute, dbGetQuery, ],
+  dbplyr[..., ],
   dplyr[arrange, collect, desc, filter, lead, mutate, select, tbl, ],
-  RSQLite[SQLite],
+  RSQLite[SQLite, ],
 )
 
 # nolint start: object_name_linter

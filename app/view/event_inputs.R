@@ -4,10 +4,11 @@ box::use(
   shiny[
     actionButton, br, dateInput, div, h2, h4, hr,
     modalDialog, moduleServer, NS, observe, observeEvent,
-    removeModal, selectInput, showModal, showNotification,
-    tagList, textAreaInput, textInput,
+    removeModal, selectInput, showModal,
+    tagList, textAreaInput,
     updateActionButton, updateTextAreaInput, wellPanel,
   ],
+  shinyWidgets[airDatepickerInput, timepickerOptions, ],
 )
 
 box::use(
@@ -180,10 +181,14 @@ server <- function(id, con, bump, trigger) {
           ns("retro_date"), "Date:",
           value = Sys.Date()
         ),
-        textInput(
-          ns("retro_time"), "Time (HH:MM):",
-          value = format(Sys.time(), "%H:%M"),
-          placeholder = "14:30"
+        airDatepickerInput(
+          ns("retro_time"), "Time:",
+          value = Sys.time(),
+          onlyTimepicker = TRUE,
+          timepicker = TRUE,
+          timepickerOpts = timepickerOptions(
+            timeFormat = "HH:mm"
+          )
         ),
         textAreaInput(
           ns("retro_notes"), "Notes (optional):",
@@ -207,16 +212,7 @@ server <- function(id, con, bump, trigger) {
     observeEvent(input$retro_cancel, removeModal())
 
     observeEvent(input$retro_submit, {
-      time_str <- input$retro_time
-      if (!grepl(
-        "^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$", time_str
-      )) {
-        showNotification(
-          "Invalid time. Use HH:MM (e.g. 14:30).",
-          type = "error"
-        )
-        return()
-      }
+      time_str <- format(input$retro_time, "%H:%M")
       ts <- paste0(input$retro_date, " ", time_str, ":00")
       info <- events$event_map[[input$retro_type]]
       notes <- if (nzchar(input$retro_notes)) {

@@ -2,13 +2,15 @@
 
 box::use(
   dplyr[filter, group_by, mutate, n, summarize, ],
-  lubridate[floor_date, ],
   echarts4r[
     e_charts, echarts4rOutput, e_color, e_line,
     e_tooltip, e_x_axis, e_y_axis, renderEcharts4r,
   ],
   htmlwidgets[JS, ],
-  shiny[br, div, moduleServer, NS, reactive, selectInput, tagList, ],
+  shiny[
+    br, div, moduleServer, NS, reactive,
+    selectInput, tagList,
+  ],
 )
 
 box::use(
@@ -78,19 +80,34 @@ server <- function(id, con, trigger) {
         event_data <- event_data |>
           filter(date > Sys.Date() - 7)
       } else {
-        # Round each date down to its week-start (Sunday).
-        # The prep functions group by `date`, so collapsing
-        # dates to week boundaries makes them aggregate by week.
+        # Bucket into 7-day windows anchored to today.
+        # e.g. today Mar 17: bucket 1 = Mar 11-17,
+        # bucket 2 = Mar 4-10, etc. Each bucket's date
+        # is the last day (end) of that window.
+        today <- Sys.Date()
         event_data <- event_data |>
-          mutate(date = floor_date(date, "week"))
+          mutate(
+            days_ago = as.integer(today - date),
+            date = today - (days_ago %/% 7L) * 7L
+          )
       }
 
-      switch(input$category,
+      result <- switch(input$category,
         "diaper" = events$prep_diapers(event_data),
         "food" = events$prep_feedings(event_data),
         "nap" = events$prep_naps(event_data),
         "bed" = events$prep_sleep(event_data)
       )
+
+      # Weekly view: divide totals by 7 for daily averages
+      if (input$time_range == "weekly") {
+        result <- result |> mutate(n = round(n / 7, 1))
+        attr(result, "y_label") <- paste(
+          "Avg Daily", attr(result, "y_label")
+        )
+      }
+
+      result
     })
 
     output$charts <- renderEcharts4r({
@@ -112,10 +129,16 @@ server <- function(id, con, trigger) {
         x_type <- "category"
         x_fmt <- JS("
           function(value) {
-            var d = new Date(value);
+            var end = new Date(value);
+            var start = new Date(end);
+            start.setDate(start.getDate() - 6);
             var m = ['Jan','Feb','Mar','Apr','May','Jun',
                      'Jul','Aug','Sep','Oct','Nov','Dec'];
-            return 'Wk ' + m[d.getMonth()] + ' ' + d.getDate();
+            var endLabel = (start.getMonth() === end.getMonth())
+              ? end.getDate()
+              : m[end.getMonth()] + ' ' + end.getDate();
+            return m[start.getMonth()] + ' ' +
+              start.getDate() + '-' + endLabel;
           }
         ")
       }

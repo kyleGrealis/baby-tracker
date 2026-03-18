@@ -8,10 +8,9 @@ box::use(
     actionButton, dateInput, dateRangeInput, div,
     eventReactive, modalDialog, moduleServer,
     NS, observe, observeEvent, reactive, reactiveVal,
-    removeModal, req, selectInput, showModal,
+    removeModal, req, selectInput, showModal, showNotification,
     span, tagList, textAreaInput, textInput,
   ],
-  shinyWidgets[airDatepickerInput, timepickerOptions, ],
 )
 
 box::use(
@@ -116,14 +115,10 @@ server <- function(id, con, trigger, bump) {
           ns("edit_date"), "Date:",
           value = as.Date(row$timestamp)
         ),
-        airDatepickerInput(
-          ns("edit_time"), "Time:",
-          value = ts,
-          onlyTimepicker = TRUE,
-          timepicker = TRUE,
-          timepickerOpts = timepickerOptions(
-            timeFormat = "HH:mm"
-          )
+        textInput(
+          ns("edit_time"), "Time (HH:MM):",
+          value = format(ts, "%H:%M"),
+          placeholder = "14:30"
         ),
         textAreaInput(
           ns("edit_notes"), "Notes (optional):",
@@ -154,7 +149,14 @@ server <- function(id, con, trigger, bump) {
     observeEvent(input$edit_cancel, removeModal())
 
     observeEvent(input$edit_save, {
-      time_str <- format(input$edit_time, "%H:%M")
+      time_str <- input$edit_time
+      if (!grepl("^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$", time_str)) {
+        showNotification(
+          "Invalid time. Use HH:MM (e.g. 14:30).",
+          type = "error"
+        )
+        return()
+      }
       ts <- paste0(input$edit_date, " ", time_str, ":00")
       info <- events$event_map[[input$edit_type]]
       notes <- if (nzchar(input$edit_notes)) {

@@ -1,7 +1,10 @@
 # main.R
 
 box::use(
-  shiny[bootstrapPage, div, h1, moduleServer, NS, reactiveVal, tags, ],
+  shiny[
+    bootstrapPage, div, h1, moduleServer, NS, reactiveVal, tags,
+    tabsetPanel, tabPanel,
+  ],
 )
 
 box::use(
@@ -9,6 +12,7 @@ box::use(
   app / view / event_inputs,
   app / view / event_log,
   app / view / summary_cards,
+  app / view / trends,
 )
 
 
@@ -29,7 +33,10 @@ ui <- function(id) {
       class = "components-container",
       event_inputs$ui(ns("event_inputs")),
       summary_cards$ui(ns("summary_cards")),
-      event_log$ui(ns("event_log"))
+      tabsetPanel(
+        tabPanel("Event Log", event_log$ui(ns("event_log"))),
+        tabPanel("Trends", trends$ui(ns("charts")))
+      )
     )
   )
 }
@@ -57,5 +64,6 @@ server <- function(id) {
     event_inputs$server("event_inputs", con, bump, trigger)
     summary_cards$server("summary_cards", con, trigger)
     event_log$server("event_log", con, trigger, bump)
+    trends$server("charts", con, trigger)
   })
 }

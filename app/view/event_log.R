@@ -6,7 +6,7 @@ box::use(
   ],
   shiny[
     actionButton, dateInput, dateRangeInput, div,
-    eventReactive, h4, modalDialog, moduleServer,
+    eventReactive, modalDialog, moduleServer,
     NS, observe, observeEvent, reactive, reactiveVal,
     removeModal, req, selectInput, showModal,
     showNotification, span, tagList, textAreaInput,
@@ -47,7 +47,6 @@ ui <- function(id) {
           class = "btn-search"
         )
       ),
-      h4("Event Log"),
       reactableOutput(ns("log"))
     )
   )

@@ -99,6 +99,17 @@ log_event <- function(con, event_cat, event_type, label, notes = NA) {
   )
 }
 
+#' Get all events as a tibble, sorted chronologically
+#'
+#' @param con DBI connection from connect().
+#' @return A tibble with all events.
+#' @export
+get_all_events <- function(con) {
+  tbl(con, "events") |>
+    arrange(timestamp) |>
+    collect()
+}
+
 #' Get today's events as a tibble, newest first
 #'
 #' This is where dbplyr shines. tbl() creates a *lazy* reference

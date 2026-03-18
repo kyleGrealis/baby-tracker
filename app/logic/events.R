@@ -1,6 +1,7 @@
 # app/logic/events.R
 
 box::use(
+  dplyr[arrange, filter, group_by, lead, mutate, n, summarize, ],
   stats[setNames],
 )
 
@@ -48,3 +49,72 @@ event_choices <- setNames(
 
 # Goodnight, Baby      Good morning, Baby
 # "night_start"        "night_stop"
+
+
+# Prepare events plot data (app/view/trends.R)
+#' @param events Tibble. Event data filtered to category
+prep_diapers <- function(events) {
+  result <- events |>
+    mutate(label = paste0(label, "s")) |>
+    summarize(n = n(), .by = c(date, label)) |>
+    group_by(label)
+
+  attr(result, "y_label") <- "Number of Diapers"
+  attr(result, "colors") <- c("#d7ccc8", "#f48fb1", "#90caf9")
+  result
+}
+
+prep_feedings <- function(events) {
+  result <- events |>
+    filter(event_type == "food_start") |>
+    mutate(event_type = "Feedings") |>
+    summarize(n = n(), .by = c(date, event_type)) |>
+    group_by(event_type)
+
+  attr(result, "y_label") <- "Number of Feedings"
+  result
+}
+
+prep_naps <- function(events) {
+  result <- events |>
+    filter(event_type %in% c("nap_start", "nap_stop")) |>
+    mutate(time = as.POSIXct(timestamp)) |>
+    arrange(time) |>
+    mutate(
+      next_type = lead(event_type),
+      next_time = lead(time)
+    ) |>
+    filter(event_type == "nap_start", next_type == "nap_stop") |>
+    mutate(
+      hours = as.numeric(difftime(next_time, time, units = "hours"))
+    ) |>
+    summarize(n = round(sum(hours), 1), .by = date) |>
+    mutate(series = "Nap hours") |>
+    group_by(series)
+
+  attr(result, "y_label") <- "Hours of Napping"
+  result
+}
+
+prep_sleep <- function(events) {
+  result <- events |>
+    filter(event_type %in% c("night_start", "night_stop")) |>
+    mutate(time = as.POSIXct(timestamp)) |>
+    arrange(time) |>
+    mutate(
+      next_type = lead(event_type),
+      next_time = lead(time)
+    ) |>
+    filter(
+      event_type == "night_start", next_type == "night_stop"
+    ) |>
+    mutate(
+      hours = as.numeric(difftime(next_time, time, units = "hours"))
+    ) |>
+    summarize(n = round(sum(hours), 1), .by = date) |>
+    mutate(series = "Sleep hours") |>
+    group_by(series)
+
+  attr(result, "y_label") <- "Hours of Nightly Sleep"
+  result
+}

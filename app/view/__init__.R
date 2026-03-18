@@ -5,4 +5,5 @@ box::use(
   app / view / event_inputs,
   app / view / event_log,
   app / view / summary_cards,
+  app / view / trends,
 )

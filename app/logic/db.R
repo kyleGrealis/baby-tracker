@@ -42,8 +42,35 @@ connect <- function() {
     if (file.exists(SEED_DB)) {
       file.copy(SEED_DB, tmp)
     }
-    dbConnect(SQLite(), tmp)
+    con <- dbConnect(SQLite(), tmp)
+    bump_dates(con)
+    con
   }
+}
+
+#' Shift all event timestamps so the newest lands on today.
+#' Only runs in demo mode on the temp copy -- the seed file
+#' is never touched. Uses SQLite's datetime() modifier:
+#' datetime(timestamp, '+N days') adds N calendar days while
+#' preserving the original time-of-day.
+bump_dates <- function(con) {
+  max_date <- dbGetQuery(
+    con, "SELECT MAX(date(timestamp)) AS d FROM events"
+  )$d
+  if (is.na(max_date)) {
+    return(invisible(NULL))
+  }
+  offset <- as.integer(Sys.Date() - as.Date(max_date))
+  if (offset == 0L) {
+    return(invisible(NULL))
+  }
+  dbExecute(
+    con,
+    sprintf(
+      "UPDATE events SET timestamp = datetime(timestamp, '+%d days')",
+      offset
+    )
+  )
 }
 
 #' Close the database connection
